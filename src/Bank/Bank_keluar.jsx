@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
 import Select from "react-select";
-// Import Trash2 icon if you're using it for delete functionality
-// import { Trash2 } from "lucide-react"; 
 
 export default function Bank() {
   const [bankOptions, setBankOptions] = useState([]);
@@ -16,7 +14,6 @@ export default function Bank() {
   const navigate = useNavigate();
   const [textInput, setTextInput] = useState("");
   const [date, setDate] = useState("");
-  const keteranganRef = useRef(null);
   const [ShowModal, setShowModal] = useState(false);
   const [selectedChart, setSelectedChart] = useState(null);
   const [keterangan, setKeterangan] = useState('');
@@ -28,6 +25,7 @@ export default function Bank() {
   const [isEditMode, setIsEditMode] = useState(!!id);
   const [transactionData, setTransactionData] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [dataFetched, setDataFetched] = useState(false); // Added flag to prevent multiple fetches
 
   // Fetch initial data for dropdowns
   useEffect(() => {
@@ -61,73 +59,131 @@ export default function Bank() {
       .catch((err) => console.error("Error fetching chart data:", err));
   }, []);
 
-  // Separate useEffect to fetch transaction data when in edit mode
-useEffect(() => {
-  if (id && chartOptions.length > 0 && bankOptions.length > 0 && moneyOptions.length > 0) {
-    console.log("Fetching transaction details for ID:", id);
-    fetch(`http://localhost:8080/bank/transaction-detail/${id}`)
-      .then((res) => {
+  // FIXED: Separated data fetching to prevent multiple fetches
+  useEffect(() => {
+    // Only fetch data once all options are loaded and we haven't fetched data yet
+    if (id && chartOptions.length > 0 && bankOptions.length > 0 && moneyOptions.length > 0 && !dataFetched) {
+      console.log("Fetching transaction details for ID:", id);
+      setDataFetched(true); // Mark that we've started fetching
+      
+      // Fetch transaction details
+      fetch(`http://localhost:8080/bank/transaction-detail/${id}`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+          return res.json();
+        })
+        .then((response) => {
+          console.log("Transaction details response:", response);
+          
+          if (response && response.transaction) {
+            const transaction = response.transaction;
+            
+            // Set main transaction data
+            setTextInput(transaction.ref || "");
+            setDate(transaction.trans_date ? transaction.trans_date.split("T")[0] : new Date().toISOString().split("T")[0]);
+            
+            // Set selected bank
+            const selectedBank = bankOptions.find(bank => bank.value === transaction.bank_act);
+            if (selectedBank) {
+              console.log("Setting bank:", selectedBank);
+              setSelected(selectedBank);
+            }
+            
+            // Set selected currency
+            const selectedCurrency = moneyOptions.find(curr => curr.value === transaction.curr_code);
+            if (selectedCurrency) {
+              setSelectedMoney(selectedCurrency);
+            } else if (moneyOptions.length > 0) {
+              // Default to first currency if not found
+              setSelectedMoney(moneyOptions[1]);
+            }
+            
+            // Clear existing data before processing details
+            setData([]);
+            
+            // Process transaction details
+            if (response.details && response.details.length > 0) {
+              processTransactionDetails(response.details);
+            } else {
+              // If details are null, try fetching GL transactions directly
+              console.log("Details are null, fetching GL transactions directly");
+              fetchGLTransactions(transaction.trans_no);
+            }
+            
+            setTransactionData(transaction);
+            setDataLoaded(true);
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching transaction details:", err);
+          alert(`Failed to load transaction: ${err.message}`);
+        });
+    }
+  }, [id, chartOptions, bankOptions, moneyOptions, dataFetched]);
+
+  // Function to fetch GL transactions when details are null
+  const fetchGLTransactions = (transNo) => {
+    if (!transNo) {
+      console.error("No transaction number provided");
+      return;
+    }
+    
+    fetch(`http://localhost:8080/bank/gl-transactions/${transNo}`)
+      .then(res => {
         if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
         return res.json();
       })
-      .then((response) => {
-        console.log("Full response:", response);
-        
-        if (response && response.transaction) {
-          const transaction = response.transaction;
-          const details = response.details || [];
-          
-          // Set main transaction data
-          setTextInput(transaction.ref || "");
-          setDate(transaction.trans_date ? transaction.trans_date.split("T")[0] : new Date().toISOString().split("T")[0]);
-          
-          // Set selected bank
-          const selectedBank = bankOptions.find(bank => bank.value == transaction.bank_act);
-          if (selectedBank) {
-            console.log("Setting bank:", selectedBank);
-            setSelected(selectedBank);
-          }
-          
-          // Set selected currency (you might need to add this to your backend response)
-          const selectedCurrency = moneyOptions.find(curr => curr.value === transaction.curr_code);
-          if (selectedCurrency) setSelectedMoney(selectedCurrency);
-          
-          // Process transaction details
-          const detailsData = details.map(detail => {
-            // Find chart option
-            const chartOption = chartOptions.find(option => 
-              option.value === detail.account
-            );
-            
-            // Parse amount (make positive for expense)
-            const amount = parseFloat(detail.amount) || 0;
-            const positiveAmount = Math.abs(amount);
-            
-            return {
-              id: detail.id || new Date().getTime() + Math.random(),
-              akunBiaya: chartOption ? chartOption.label : `${detail.account}`,
-              keterangan: detail.memo || "",
-              jumlah: positiveAmount,
-              selectedChart: chartOption || { 
-                value: detail.account, 
-                label: `${detail.account}` 
-              }
-            };
-          });
-          
-          console.log("Processed details:", detailsData);
-          setData(detailsData);
-          setTransactionData(transaction);
-          setDataLoaded(true);
+      .then(glTransactions => {
+        console.log("GL Transactions:", glTransactions);
+        if (glTransactions && glTransactions.length > 0) {
+          // Clear existing data before processing
+          setData([]);
+          processTransactionDetails(glTransactions);
+        } else {
+          console.error("No GL transactions found");
         }
       })
-      //
       .catch(err => {
-        console.error("Error fetching transaction details:", err);
-        alert(`Failed to load transaction: ${err.message}`);
+        console.error("Error fetching GL transactions:", err);
       });
-  }
-}, [id, chartOptions, bankOptions, moneyOptions]);
+  };
+
+  // Function to process transaction details
+  const processTransactionDetails = (details) => {
+    if (!details || details.length === 0) return;
+    
+    // Filter out bank account transactions if needed
+    const detailsData = details
+      .filter(detail => {
+        // Skip entries with negative amounts (the bank account entry)
+        const amount = parseFloat(detail.amount) || 0;
+        return amount > 0;
+      })
+      .map(detail => {
+        // Find chart option
+        const chartOption = chartOptions.find(option => 
+          option.value === detail.account
+        );
+        
+        // Parse amount (make positive for expense)
+        const amount = parseFloat(detail.amount) || 0;
+        const positiveAmount = Math.abs(amount);
+        
+        return {
+          id: detail.id || new Date().getTime() + Math.random(),
+          akunBiaya: chartOption ? chartOption.label : `${detail.account}`,
+          keterangan: detail.memo || "",
+          jumlah: positiveAmount,
+          selectedChart: chartOption || { 
+            value: detail.account, 
+            label: `${detail.account}` 
+          }
+        };
+      });
+    
+    console.log("Processed details:", detailsData);
+    setData(detailsData);
+  };
 
   const handleAdd = () => {
     const cleanJumlah = parseFloat(parseNumber(jumlah));
@@ -316,7 +372,7 @@ useEffect(() => {
           + Tambah Biaya
         </button>
 
-        {/* Tabel Detail Biaya */}
+        {/* Table showing expense details */}
         <div className="w-full max-w-6xl min-w-[1152px] bg-white p-6 rounded-lg shadow-lg mt-16">
           <h2 className="text-lg font-bold mb-4">Detail Biaya</h2>
 
@@ -327,7 +383,7 @@ useEffect(() => {
                   <th className="p-3 border">Akun Biaya</th>
                   <th className="p-3 border">Keterangan</th>
                   <th className="p-3 border">Jumlah</th>
-                  {/* <th className="p-3 border">Aksi</th> */}
+                  <th className="p-3 border">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -347,7 +403,7 @@ useEffect(() => {
                     <td className="p-3 border">{item.akunBiaya}</td>
                     <td className="p-3 border">{item.keterangan}</td>
                     <td className="p-3 border">{item.jumlah.toLocaleString('id-ID').replace(/,/g, '.')}</td>
-                    {/* <td className="p-3 border text-center">
+                    <td className="p-3 border text-center">
                       <button
                         onClick={(e) => {
                           e.stopPropagation(); 
@@ -357,7 +413,7 @@ useEffect(() => {
                       >
                         Hapus
                       </button>
-                    </td> */}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -422,7 +478,7 @@ useEffect(() => {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
-                      document.getElementById("jumlah-input")?.focus(); // Fokus ke input jumlah
+                      document.getElementById("jumlah-input")?.focus();
                     }
                   }}
                 />
@@ -434,9 +490,9 @@ useEffect(() => {
                   type="text"
                   value={jumlah}
                   onChange={(e) => {
-                    const rawValue = e.target.value.replace(/\D/g, ""); // Ambil hanya angka
+                    const rawValue = e.target.value.replace(/\D/g, "");
                     if (rawValue === "" || /^0+$/.test(rawValue)) {
-                      setJumlah(""); // Reset jika hanya nol atau kosong
+                      setJumlah("");
                     } else {
                       const formatted = formatNumber(rawValue);
                       setJumlah(formatted);
@@ -447,12 +503,12 @@ useEffect(() => {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
-                      const rawValue = jumlah.replace(/\D/g, ""); // Ambil angka saja
+                      const rawValue = jumlah.replace(/\D/g, "");
                       if (rawValue === "" || /^0+$/.test(rawValue)) {
                         alert("Jumlah tidak boleh nol atau kosong!");
                         return;
                       }
-                      handleAdd(); // Submit jika valid
+                      handleAdd();
                     }
                   }}
                 />
