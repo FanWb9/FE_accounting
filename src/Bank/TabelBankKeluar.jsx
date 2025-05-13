@@ -46,7 +46,7 @@ export default function TabelBankKeluar() {
     <div className="p-6 max-w-7xl mx-auto bg-blue-50">
       <h1 className="text-2xl font-bold mb-6">Transaksi Bank</h1>
 
-      {/* Tombol Create dan Search Bar */}
+      {/* Tombol Create  dann Search Bar */}
       <div className="flex justify-between items-center mb-2">
         <button
           onClick={() => navigate("/create")} // Navigasi ke halaman create

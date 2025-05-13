@@ -41,7 +41,7 @@ export default function Priview() {
       // Membuat Blob dan menyimpan file
       const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       
-      // Menyimpan file dengan nama yang sesuai
+      // Menyimpan file dengan nama yang
       saveAs(blob, `Transaksi-${data.ref}.xlsx`);
     };
 

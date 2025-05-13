@@ -25,7 +25,7 @@ export default function Bank() {
   const [isEditMode, setIsEditMode] = useState(!!id);
   const [transactionData, setTransactionData] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [dataFetched, setDataFetched] = useState(false); // Added flag to prevent multiple fetches
+  const [dataFetched, setDataFetched] = useState(false); // Added flag to 
 
   // Fetch initial data for dropdowns
   useEffect(() => {
