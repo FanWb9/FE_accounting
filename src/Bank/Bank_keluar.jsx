@@ -121,6 +121,7 @@ useEffect(() => {
           setDataLoaded(true);
         }
       })
+      //
       .catch(err => {
         console.error("Error fetching transaction details:", err);
         alert(`Failed to load transaction: ${err.message}`);
