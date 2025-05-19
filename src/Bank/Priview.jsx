@@ -151,6 +151,12 @@ export default function Priview() {
     >
       Unduh XLS
     </button>
+     <button
+      onClick={() => navigate("/create")}
+      className="bg-sky-500 text-white py-2 px-4 rounded hover:bg-sky-600 "
+    >
+      New Create 
+    </button>
     <button
       onClick={() => navigate("/")}
       className="bg-red-500 text-white py-2 rounded hover:bg-red-600 "

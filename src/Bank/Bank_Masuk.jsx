@@ -5,9 +5,9 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from "react-spinners";
+export default function BankMasuk() {
 
-export default function Bank() {
-  const [bankOptions, setBankOptions] = useState([]);
+const [bankOptions, setBankOptions] = useState([]);
   const [moneyOptions, setMoneyOptions] = useState([]);
   const selectRef = useRef(null);
   const [chartOptions, setChartOptions] = useState([]);
@@ -92,7 +92,7 @@ export default function Bank() {
       setIsLoading(true);
       
       // Fetch transaction details
-      axios.get(`${API_URL}/bank/transaction-detail/${id}`)
+      axios.get(`${API_URL}/income/incomes-detail/${id}`)
         .then((response) => {
           console.log("Transaction details response:", response.data);
           
@@ -298,12 +298,12 @@ export default function Bank() {
   setIsSaving(true);
   
   try {
-    let url = `${API_URL}/bank/Transaction`;
+    let url = `${API_URL}/income/incomes `;
     let method = "post";
     
     // If in edit mode, use PUT endpoint
     if (isEditMode && id) {
-      url = `${API_URL}/bank/Transaction/${id}`;
+      url = `${API_URL}/income/incomes/${id}`;
       method = "put";
     }
     

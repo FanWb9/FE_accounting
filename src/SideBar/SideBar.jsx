@@ -2,38 +2,41 @@ import React, { useState } from "react";
 import {
   Menu,
   LayoutDashboard,
-  Settings,
-  BarChart2,
-  User,
-  Heart,
-  MessageSquare,
-  Folder,
+  Wallet,
+  ShoppingBag,
   ShoppingCart,
+  Package,
+  Factory,
+  Briefcase,
+  BarChart2,
+  Settings
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import Logo from "../assets/Fin.png";
 
 export default function SideBar() {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false); // Default to closed
 
   const menus = [
     { name: "Dashboard", link: "/", icon: LayoutDashboard },
-    { name: "User", link: "/", icon: User },
-    { name: "Messages", link: "/", icon: MessageSquare },
-    { name: "Analytics", link: "/", icon: BarChart2, margin: true },
-    { name: "File Manager", link: "/", icon: Folder },
-    { name: "Cart", link: "/", icon: ShoppingCart },
-    { name: "Saved", link: "/", icon: Heart, margin: true },
+    { name: "Kas & Bank", link: "/", icon: Wallet },
+    { name: "Penjualan", link: "/", icon: ShoppingBag },
+    { name: "Pembelian", link: "/", icon: ShoppingCart, margin: true },
+    { name: "Produk", link: "/", icon: Package },
+    { name: "Produksi", link: "/", icon: Factory },
+    { name: "Aset", link: "/", icon: Briefcase, margin: true },
+    { name: "Laporan", link: "/", icon: BarChart2 },
     { name: "Setting", link: "/", icon: Settings },
   ];
 
   return (
-    <section className="flex gap-6">
+    <section className="flex">
       <div
-        className={`bg-[#0e0e0e] min-h-screen ${
+        className={`bg-blue-950 min-h-screen fixed ${
           open ? "w-72" : "w-16"
         } duration-500 text-gray-100 px-4`}
       >
-        <div className="py-3 flex justify-end">
+        <div className="py-5 flex justify-end">
           <Menu
             size={26}
             className="cursor-pointer"
@@ -47,7 +50,7 @@ export default function SideBar() {
               key={i}
               className={`${
                 menu.margin && "mt-5"
-              } group flex items-center text-sm gap-3.5 font-medium p-2 hover:bg-gray-800 rounded-md`}
+              } group flex items-center text-sm gap-3.5 font-medium p-2 hover:bg-sky-400 rounded-md`}
             >
               <div>{React.createElement(menu.icon, { size: 20 })}</div>
               <h2
@@ -69,9 +72,8 @@ export default function SideBar() {
           ))}
         </div>
       </div>
-      {/* <div className="m-3 text-xl text-gray-900 font-semibold">
-        REACT TAil
-      </div> */}
+      {/* This empty div creates space for the fixed sidebar */}
+      <div className={`${open ? "w-72" : "w-16"} flex-shrink-0 duration-500`}></div>
     </section>
   );
 }
