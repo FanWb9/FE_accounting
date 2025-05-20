@@ -158,7 +158,7 @@ export default function Priview() {
       New Create 
     </button>
     <button
-      onClick={() => navigate("/")}
+      onClick={() => navigate("/pengeluaran")}
       className="bg-red-500 text-white py-2 rounded hover:bg-red-600 "
     >
       Kembali

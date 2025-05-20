@@ -18,15 +18,15 @@ export default function SideBar() {
   const [open, setOpen] = useState(false); // Default to closed
 
   const menus = [
-    { name: "Dashboard", link: "/", icon: LayoutDashboard },
-    { name: "Kas & Bank", link: "/", icon: Wallet },
-    { name: "Penjualan", link: "/", icon: ShoppingBag },
-    { name: "Pembelian", link: "/", icon: ShoppingCart, margin: true },
-    { name: "Produk", link: "/", icon: Package },
-    { name: "Produksi", link: "/", icon: Factory },
-    { name: "Aset", link: "/", icon: Briefcase, margin: true },
-    { name: "Laporan", link: "/", icon: BarChart2 },
-    { name: "Setting", link: "/", icon: Settings },
+    { name: "Dashboard", link: "/pengeluaran", icon: LayoutDashboard },
+    { name: "Kas & Bank", link: "/pengeluaran", icon: Wallet },
+    { name: "Penjualan", link: "/pengeluaran", icon: ShoppingBag },
+    { name: "Pembelian", link: "/pengeluaran", icon: ShoppingCart, margin: true },
+    { name: "Produk", link: "/pengeluaran", icon: Package },
+    { name: "Produksi", link: "/pengeluaran", icon: Factory },
+    { name: "Aset", link: "/pengeluaran", icon: Briefcase, margin: true },
+    { name: "Laporan", link: "/pengeluaran", icon: BarChart2 },
+    { name: "Setting", link: "/pengeluaran", icon: Settings },
   ];
 
   return (

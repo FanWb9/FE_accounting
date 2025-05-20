@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Trash2, Edit, ArrowUpDown, Search, TrendingDown, TrendingUp, Calendar } from "lucide-react";
+import { Trash2, Edit, ArrowUpDown, Search, TrendingDown, TrendingUp, Calendar, LogOut } from "lucide-react";
 
 const API_URL = "http://localhost:8080";
 
@@ -19,6 +19,8 @@ export default function TabelBankKeluar() {
   const [sortDirection, setSortDirection] = useState("desc");
   const [transactionType, setTransactionType] = useState("pengeluaran");
   const [totals, setTotals] = useState({ pengeluaran: 0, pembayaran: 0 });
+  const [userData, setUserData] = useState(null);
+  const [companyData, setCompanyData] = useState(null);
   
   // Date filter states
   const [dateFilter, setDateFilter] = useState("semua"); // "hari_ini", "bulan_ini", "tahun_ini", "rentang", "semua"
@@ -29,6 +31,38 @@ export default function TabelBankKeluar() {
 
   const itemsPerPage = 10;
   const navigate = useNavigate();
+
+  // Check authentication on component mount
+ useEffect(() => {
+  checkAuth();
+}, []);
+
+// Get authentication data from sessionStorage
+const checkAuth = () => {
+  const token = sessionStorage.getItem('token');
+  const user = sessionStorage.getItem('user');
+
+  if (!token || !user) {
+    toast.error("Sesi login tidak valid. Silakan login kembali.");
+    navigate('/login');
+    return;
+  }
+
+  try {
+    const parsedUser = JSON.parse(user);
+    setUserData(parsedUser);
+    setCompanyData(parsedUser.company);
+
+    // Set up Axios default header for all future requests
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+    toast.error("Terjadi kesalahan pada data pengguna");
+    navigate('/login');
+  }
+};
+
+
 
   // Date filter functions
   const isToday = (date) => {
@@ -81,6 +115,7 @@ export default function TabelBankKeluar() {
       ? `${API_URL}/bank/banktrans` 
       : `${API_URL}/income/name`;
     
+    // Token is already set in axios defaults in checkAuth
     axios
       .get(endpoint)
       .then((response) => {
@@ -107,12 +142,21 @@ export default function TabelBankKeluar() {
       })
       .catch((error) => {
         console.error(`Error fetching ${transactionType} data:`, error);
-        toast.error(`Gagal memuat data ${transactionType}`);
+        if (error.response && error.response.status === 401) {
+          toast.error("Sesi login tidak valid. Silakan login kembali.");
+          navigate('/login');
+        } else {
+          toast.error(`Gagal memuat data ${transactionType}`);
+        }
       });
   };
 
   // Fetch totals for both transaction types with date filter
   const fetchAllTotals = () => {
+    if (!axios.defaults.headers.common['Authorization']) {
+      return; // Don't fetch if not authenticated
+    }
+    
     // Fetch pengeluaran total
     axios.get(`${API_URL}/bank/banktrans`)
       .then((response) => {
@@ -120,7 +164,13 @@ export default function TabelBankKeluar() {
         const pengeluaranTotal = filteredData.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
         setTotals(prev => ({ ...prev, pengeluaran: pengeluaranTotal }));
       })
-      .catch((error) => console.error("Error fetching pengeluaran total:", error));
+      .catch((error) => {
+        console.error("Error fetching pengeluaran total:", error);
+        if (error.response && error.response.status === 401) {
+          toast.error("Sesi login tidak valid. Silakan login kembali.");
+          navigate('/login');
+        }
+      });
 
     // Fetch pembayaran total
     axios.get(`${API_URL}/income/name`)
@@ -129,17 +179,27 @@ export default function TabelBankKeluar() {
         const pembayaranTotal = filteredData.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
         setTotals(prev => ({ ...prev, pembayaran: pembayaranTotal }));
       })
-      .catch((error) => console.error("Error fetching pembayaran total:", error));
+      .catch((error) => {
+        console.error("Error fetching pembayaran total:", error);
+        if (error.response && error.response.status === 401) {
+          toast.error("Sesi login tidak valid. Silakan login kembali.");
+          navigate('/login');
+        }
+      });
   };
 
   useEffect(() => {
-    fetchAllTotals();
-  }, [dateFilter, customDateRange]);
+    if (userData) {
+      fetchAllTotals();
+    }
+  }, [dateFilter, customDateRange, userData]);
 
   useEffect(() => {
-    fetchData();
-    setCurrentPage(1);
-  }, [sortDirection, transactionType, dateFilter, customDateRange]);
+    if (userData) {
+      fetchData();
+      setCurrentPage(1);
+    }
+  }, [sortDirection, transactionType, dateFilter, customDateRange, userData]);
 
   // Update data when date filter changes
   useEffect(() => {
@@ -183,7 +243,12 @@ export default function TabelBankKeluar() {
       })
       .catch((error) => {
         console.error("Error deleting item:", error);
-        toast.error("Gagal menghapus item");
+        if (error.response && error.response.status === 401) {
+          toast.error("Sesi login tidak valid. Silakan login kembali.");
+          navigate('/login');
+        } else {
+          toast.error("Gagal menghapus item");
+        }
       })
       .finally(() => {
         setIsDeleting(false);
@@ -350,9 +415,13 @@ export default function TabelBankKeluar() {
     <div className="p-6 max-w-7xl mx-auto bg-white">
       <ToastContainer position="top-right" autoClose={3000} />
       
-      {/* Header with title */}
+      {/* Header with title and user info */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Transaksi Bank</h1>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold text-gray-900">Transaksi Bank</h1>
+          
+          
+        </div>
         
         {/* Date Filter Section */}
         <div className="mb-6 p-4 bg-gray-50 rounded-lg border">

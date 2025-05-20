@@ -692,7 +692,7 @@ const [bankOptions, setBankOptions] = useState([]);
             <div className="flex space-x-4">
               <button
                 type="button"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/pengeluaran")}
                 className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                 disabled={isLoading || isSaving}
               >
