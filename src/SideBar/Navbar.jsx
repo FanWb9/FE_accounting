@@ -56,7 +56,7 @@ export default function Navbar() {
   };
  
   return (
-    <div className="bg-sky-500 border-b shadow-sm z-30 fixed top-0 left-0 right-0">
+    <div className="bg-gradient-to-r from-slate-800 via-blue-900 to-slate-800  border-b shadow-sm z-30 fixed top-0 left-0 right-0">
       <div className="flex justify-between items-center px-4 py-3">
         {/* Brand Logo - Left Side */}
         <div className="flex items-center gap-2">

@@ -9,7 +9,9 @@ import {
   Factory,
   Briefcase,
   BarChart2,
-  Settings
+  Settings,
+  Notebook,
+ 
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Logo from "../assets/Fin.png";
@@ -18,14 +20,15 @@ export default function SideBar() {
   const [open, setOpen] = useState(false); // Default to closed
 
   const menus = [
-    { name: "Dashboard", link: "/pengeluaran", icon: LayoutDashboard },
+    { name: "Dashboard", link: "/Dashboard", icon: LayoutDashboard },
     { name: "Kas & Bank", link: "/pengeluaran", icon: Wallet },
-    { name: "Penjualan", link: "/pengeluaran", icon: ShoppingBag },
-    { name: "Pembelian", link: "/pengeluaran", icon: ShoppingCart, margin: true },
+    { name: "Buku Besar", link:"/TabelJurnal",icon:Notebook},
+    { name: "Penjualan", link: "/pengeluaran", icon: ShoppingBag, margin: true },
+    { name: "Pembelian", link: "/pengeluaran", icon: ShoppingCart },
     { name: "Produk", link: "/pengeluaran", icon: Package },
     { name: "Produksi", link: "/pengeluaran", icon: Factory },
     { name: "Aset", link: "/pengeluaran", icon: Briefcase, margin: true },
-    { name: "Laporan", link: "/pengeluaran", icon: BarChart2 },
+    { name: "Laporan", link: "/laporan", icon: BarChart2 },
     { name: "Setting", link: "/pengeluaran", icon: Settings },
   ];
 

@@ -20,14 +20,14 @@ const Alert = ({ type, message }) => (
 
 // Background component
 const Background = () => (
-  <div className="absolute inset-0 overflow-hidden">
+   <div className="absolute inset-0 overflow-hidden">
     {/* Gradient background */}
-    <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"></div>
+    <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-gray-50"></div>
     
     {/* Animated shapes */}
-    <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-20 animate-pulse"></div>
+    {/* <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full opacity-20 animate-pulse"></div>
     <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-indigo-400 to-blue-500 rounded-full opacity-20 animate-pulse"></div>
-    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-10 animate-pulse"></div>
+    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-10 animate-pulse"></div> */}
   </div>
 );
 

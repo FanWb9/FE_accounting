@@ -314,7 +314,7 @@ const [bankOptions, setBankOptions] = useState([]);
     // Navigate after a short delay to show the success message
     setTimeout(() => {
       setIsSaving(false);
-      navigate("/priview", { state: { transactionData } });
+      navigate("/priview-bank", { state: { transactionData } });
     }, 1500);
   } catch (error) {
     console.error("Error:", error);
@@ -453,7 +453,7 @@ const [bankOptions, setBankOptions] = useState([]);
         {/* Header */}
         <div className="bg-white p-6 text-black">
           <h1 className="text-2xl font-bold text-center">
-            {isEditMode ? "Edit Transaksi Bank" : "Kas Keluar"}
+            {isEditMode ? "Edit Transaksi Bank" : "Kas Masuk"}
           </h1>
         </div>
         
