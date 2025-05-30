@@ -63,7 +63,7 @@ export default function Navbar() {
           <div className="h-8 w-8 bg-blue-600 rounded-md flex items-center justify-center">
             <span className="text-white font-bold text-lg">F</span>
           </div>
-          <h1 className="text-xl font-bold text-white">FinNo</h1>
+          <h1 className="text-xl font-bold text-white">FINNOS</h1>
         </div>
 
         {/* User Name, Profile, and Bell - Right Side */}

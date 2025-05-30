@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart2, FileText, Calculator, DollarSign, Users, TrendingUp, Eye } from 'lucide-react';
+import { BarChart2, FileText, Calculator, DollarSign, Users, TrendingUp, Eye, BookOpen } from 'lucide-react';
 
 export default function AccountingReports() {
   const reportCategories = [
@@ -9,7 +9,17 @@ export default function AccountingReports() {
       icon: FileText,
       description: 'Catatan transaksi harian perusahaan',
       color: 'bg-blue-500',
-      route: '/laporan-jurnal'
+      route: '/laporan-jurnal',
+      available: true
+    },
+    {
+      id: 'buku-besar',
+      name: 'Buku Besar',
+      icon: BookOpen,
+      description: 'Ringkasan saldo setiap akun',
+      color: 'bg-emerald-500',
+      route: '/laporan-buku',
+      available: true
     },
     {
       id: 'neraca',
@@ -17,7 +27,8 @@ export default function AccountingReports() {
       icon: Calculator,
       description: 'Laporan posisi keuangan',
       color: 'bg-green-500',
-      route: '/laporan-neraca'
+      route: '/laporan-neraca',
+      available: true
     },
     {
       id: 'laba-rugi',
@@ -25,7 +36,8 @@ export default function AccountingReports() {
       icon: TrendingUp,
       description: 'Laporan pendapatan dan beban',
       color: 'bg-purple-500',
-      route: '/laporan-laba-rugi'
+      route: '/laporan-laba-rugi',
+      available: true
     },
     {
       id: 'kas',
@@ -33,7 +45,8 @@ export default function AccountingReports() {
       icon: DollarSign,
       description: 'Laporan pergerakan kas',
       color: 'bg-orange-500',
-      route: '/laporan-kas'
+      route: '/laporan-kas',
+      available: true
     },
     {
       id: 'gaji',
@@ -41,7 +54,8 @@ export default function AccountingReports() {
       icon: Users,
       description: 'Laporan penggajian karyawan',
       color: 'bg-red-500',
-      route: '/laporan-gaji'
+      route: '/laporan-gaji',
+      available: false
     },
     {
       id: 'produksi',
@@ -49,19 +63,18 @@ export default function AccountingReports() {
       icon: BarChart2,
       description: 'Laporan hasil produksi',
       color: 'bg-indigo-500',
-      route: '/laporan-produksi'
+      route: '/laporan-produksi',
+      available: false
     }
   ];
 
   const handleNavigateToReport = (route, name) => {
-    // Untuk sekarang hanya jurnal yang working, yang lain coming soon
-    if (route === '/laporan-jurnal') {
-      // Di React Router nanti pakai: navigate(route)
-      window.location.href = route;
-    } else {
-      alert(`Laporan ${name} akan segera tersedia`);
-    }
+    // Navigasi langsung ke route
+    window.location.href = route;
   };
+
+  const availableReports = reportCategories.filter(cat => cat.available).length;
+  const totalReports = reportCategories.length;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -103,21 +116,6 @@ export default function AccountingReports() {
               </div>
             );
           })}
-        </div>
-
-        {/* Quick Info */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Informasi</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
-              <h3 className="font-semibold text-green-800">Laporan Tersedia</h3>
-              <p className="text-green-600 text-sm">Jurnal Umum sudah dapat diakses dengan filter lengkap</p>
-            </div>
-            <div className="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
-              <h3 className="font-semibold text-yellow-800">Coming Soon</h3>
-              <p className="text-yellow-600 text-sm">Laporan lainnya sedang dalam pengembangan</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

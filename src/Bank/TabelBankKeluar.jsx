@@ -303,13 +303,13 @@ const checkAuth = () => {
   };
 
   const handleRowClick = (id) => {
-    const route = transactionType === "pengeluaran" ? "/create" : "/income";
+    const route = transactionType === "pengeluaran" ? "/create" : transactionType === "pembayaran" ? "/income" :"/bank-transfer";
     navigate(`${route}/${id}`);
   };
 
   const handleEdit = (e, id) => {
     e.stopPropagation();
-    const route = transactionType === "pengeluaran" ? "/create" : "/income";
+    const route = transactionType === "pengeluaran" ? "/create" : transactionType === "pembayaran" ? "/income" : "/bank-transfer";
     navigate(`${route}/${id}`);
   };
 
@@ -405,7 +405,7 @@ const checkAuth = () => {
   return displayedData.map((item) => {
     if (transactionType === "transfer") {
       return (
-        <tr key={item.ref} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleRowClick(item.ref)}>
+        <tr key={item.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleRowClick(item.trans_no || item.outgoing_trans?.id || item.incoming_trans?.id)}>
           <td className="px-6 py-3 text-left">{item.ref}</td>
           <td className="px-6 py-3 text-left">{item.from?.bank || "-"}</td>
           <td className="px-6 py-3 text-left">{item.to?.bank || "-"}</td>
@@ -417,10 +417,10 @@ const checkAuth = () => {
           </td>
           <td className="px-6 py-3 text-center">
             <div className="flex justify-center space-x-2">
-              <button onClick={(e) => handleEdit(e, item.ref)} className="p-1 text-blue-600 hover:text-blue-800" title="Edit">
+              <button onClick={(e) => handleEdit(e, item.id)} className="p-1 text-blue-600 hover:text-blue-800" title="Edit">
                 <Edit size={18} />
               </button>
-              <button onClick={(e) => handleDelete(e, item.ref)} className="p-1 text-red-600 hover:text-red-800" title="Delete">
+              <button onClick={(e) => handleDelete(e, item.id)} className="p-1 text-red-600 hover:text-red-800" title="Delete">
                 <Trash2 size={18} />
               </button>
             </div>
@@ -678,9 +678,10 @@ const checkAuth = () => {
         <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
           transactionType === "pengeluaran" 
             ? "bg-red-100 text-red-800" 
-            : "bg-green-100 text-green-800"
+            : transactionType === "pembayaran" ? "bg-green-100 text-green-800"
+            : "bg-blue-100 text-blue-700"
         }`}>
-          Menampilkan: {transactionType === "pengeluaran" ? "Pengeluaran" : "Pembayaran"} • {getDateFilterLabel()}
+          Menampilkan: {transactionType === "pengeluaran" ? "Pengeluaran" : transactionType === "pembayaran" ? "Pembayaran":"transfer"} • {getDateFilterLabel()}
         </div>
       </div>
 

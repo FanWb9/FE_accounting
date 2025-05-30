@@ -19,10 +19,11 @@ export default function BankTransfer() {
   const [ket, setKet] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false); 
   
   const navigate = useNavigate();
   const { id } = useParams();
-  const [isEditMode, setIsEditMode] = useState(!!id);
+ 
 
   const API_URL = "http://localhost:8080";
 
@@ -74,6 +75,65 @@ export default function BankTransfer() {
     }
   };
 
+  // Fetch transaction data if in edit mode
+  useEffect(() => {
+  if (id && bankOptions.length > 0 && cabangOptions.length > 0 && !isEditMode) {
+    setIsEditMode(true);
+    setIsLoading(true);
+    
+    axios.get(`${API_URL}/transfer/detail/${id}`)
+      .then((response) => {
+        console.log("Transfer details response:", response.data);
+        
+        const data = response.data;
+        
+        // Set form fields dari response
+        setAmount(data.amount ? formatNumber(data.amount.toString()) : "");
+        setTransDate(data.trans_date ? data.trans_date.split("T")[0] : "");
+        setRef(data.ref || "");
+        setKet(data.ket || "");
+        
+        // Set bank from (cari berdasarkan nama bank)
+        const bankFromOption = bankOptions.find(bank => 
+          bank.label === data.from.bank
+        );
+        if (bankFromOption) {
+          setBankFrom(bankFromOption);
+        }
+        
+        // Set bank to
+        const bankToOption = bankOptions.find(bank => 
+          bank.label === data.to.bank
+        );
+        if (bankToOption) {
+          setBankTo(bankToOption);
+        }
+        
+        // Set proyek from
+        const proyekFromOption = cabangOptions.find(cabang => 
+          cabang.value === data.from.proyek
+        );
+        if (proyekFromOption) {
+          setProyekFrom(proyekFromOption);
+        }
+        
+        // Set proyek to
+        const proyekToOption = cabangOptions.find(cabang => 
+          cabang.value === data.to.proyek
+        );
+        if (proyekToOption) {
+          setProyekTo(proyekToOption);
+        }
+        
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error("Error fetching transfer details:", err);
+        toast.error("Gagal memuat data transfer");
+        setIsLoading(false);
+      });
+  }
+}, [id, bankOptions, cabangOptions]);
   // Parse formatted number to float
   const parseFormattedNumber = (value) => {
     if (value.includes(',')) {
@@ -123,7 +183,7 @@ export default function BankTransfer() {
 
       // If in edit mode, use PUT endpoint
       if (isEditMode && id) {
-        url = `${API_URL}/transfer-update/${id}`;
+        url = `${API_URL}/transfer/update/${id}`;
         method = "put";
       }
 

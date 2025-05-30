@@ -77,7 +77,7 @@ export default function Login() {
 
         // Redirect ke dashboard
         setTimeout(() => {
-          navigate('/pengeluaran');
+          navigate('/dashboard');
         }, 1000);
       } else {
         setError(data.error || 'Login gagal');

@@ -144,7 +144,9 @@ export default function LaporanJurnal() {
           allEntries.push({
             date: new Date(journalItem.journal.tran_date).toLocaleDateString('id-ID'),
             reference: journalItem.journal.reference,
-            account: debit.account,
+            account: debit.account_code && debit.account_name 
+            ? `${debit.account_code} - ${debit.account_name}`
+            : debit.account || 'N/A',
             description: debit.memo || 'Transaksi Debit',
             debit: parseFloat(debit.amount),
             credit: 0
@@ -159,7 +161,9 @@ export default function LaporanJurnal() {
           allEntries.push({
             date: new Date(journalItem.journal.tran_date).toLocaleDateString('id-ID'),
             reference: journalItem.journal.reference,
-            account: credit.account,
+                  account: credit.account_code && credit.account_name 
+        ? `${credit.account_code} - ${credit.account_name}`
+        : credit.account || 'N/A',
             description: credit.memo || 'Transaksi Credit',
             debit: 0,
             credit: parseFloat(credit.amount)
@@ -221,7 +225,7 @@ export default function LaporanJurnal() {
           entry.date,
           entry.reference,
           // Sesuaikan limit karakter dengan lebar kolom baru
-          entry.account.length > 28 ? entry.account.substring(0, 28) + '...' : entry.account,
+          entry.account.length > 28 ? entry.account.substring(0, 35) + '...' : entry.account,
           entry.description.length > 32 ? entry.description.substring(0, 32) + '...' : entry.description,
           entry.debit > 0 ? entry.debit.toLocaleString('id-ID') : '-',
           entry.credit > 0 ? entry.credit.toLocaleString('id-ID') : '-'

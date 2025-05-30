@@ -15,7 +15,7 @@ import ProtectedRoute from "./ProtectedRouted";
 import Dashboard from "./Page/Dashboard";
 import PriviewBankMasuk from "./Bank/Priview_Bankmasuk";
 import BankTransfer from "./Bank/Bank_transfer";
-
+import LaporanBukuBesar from "./Laporan/Laporan-BukuBesar";
 import LaporanJurnal from "./Laporan/Jurnal-Laporan";
 
 function App() {
@@ -47,7 +47,9 @@ function App() {
           <Route path="jurnal-priview"element={<JurnalPreview/>}/>
           <Route path="laporan"element={<AccountingReports/>}/>
           <Route path="Laporan-jurnal" element={<LaporanJurnal/>}/>
-           <Route path="bank-transfer" element={<BankTransfer />} />
+          <Route path="bank-transfer" element={<BankTransfer />} />
+          <Route path="bank-transfer/:id" element={<BankTransfer />} />
+          <Route path="Laporan-buku" element={<LaporanBukuBesar/>}/>
         </Route>
       </Route>
     </Routes>
