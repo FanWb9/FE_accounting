@@ -7,7 +7,7 @@ import { Trash2, Edit, ArrowUpDown, Search, TrendingDown, TrendingUp, Calendar, 
 
 const API_URL = "http://localhost:8080";
 
-export default function TabelBankKeluar() {
+export default function TabelProduk() {
   const [data, setData] = useState([]);
   const [allData, setAllData] = useState([]); // Store all data for filtering
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,7 +18,7 @@ export default function TabelBankKeluar() {
   const [showAll, setShowAll] = useState(false);
   const [sortDirection, setSortDirection] = useState("desc");
   const [transactionType, setTransactionType] = useState("pengeluaran");
-  const [totals, setTotals] = useState({ pengeluaran: 0, pembayaran: 0, transfer:0 });
+  const [totals, setTotals] = useState({ pengeluaran: 0, pembayaran: 0 });
   const [userData, setUserData] = useState(null);
   const [companyData, setCompanyData] = useState(null);
   
@@ -111,23 +111,15 @@ const checkAuth = () => {
   };
 
   const fetchData = () => {
-    let endpoint;
-    if(transactionType === "pengeluaran"){
-      endpoint = `${API_URL}/bank/banktrans`;
-    }else if (transactionType === "pembayaran"){
-      endpoint = `${API_URL}/income/name`;
-    }else if (transactionType === "transfer"){
-      endpoint = `${API_URL}/transfer/bank`;
-    }
+    const endpoint = transactionType === "pengeluaran" 
+      ? `${API_URL}/produk/produktrans` 
+      : `${API_URL}/produk/produkmasuktrans`;
     
     // Token is already set in axios defaults in checkAuth
-      axios
+    axios
       .get(endpoint)
       .then((response) => {
-        // Validasi apakah response.data adalah array
-        const responseData = Array.isArray(response.data) ? response.data : [];
-        
-        const sortedData = [...responseData].sort((a, b) => {
+        const sortedData = [...response.data].sort((a, b) => {
           if (sortDirection === "asc") {
             return a.trans_no - b.trans_no;
           } else {
@@ -166,7 +158,7 @@ const checkAuth = () => {
     }
     
     // Fetch pengeluaran total
-    axios.get(`${API_URL}/bank/banktrans`)
+    axios.get(`${API_URL}/produk/produktrans`)
       .then((response) => {
         const filteredData = applyDateFilter(response.data);
         const pengeluaranTotal = filteredData.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
@@ -181,7 +173,7 @@ const checkAuth = () => {
       });
 
     // Fetch pembayaran total
-    axios.get(`${API_URL}/income/name`)
+    axios.get(`${API_URL}/produk/produkmasuktrans`)
       .then((response) => {
         const filteredData = applyDateFilter(response.data);
         const pembayaranTotal = filteredData.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
@@ -194,16 +186,6 @@ const checkAuth = () => {
           navigate('/login');
         }
       });
-     axios.get(`${API_URL}/transfer/bank`)
-  .then((response) => {
-    // Validasi data sebelum memproses
-    const transferData = Array.isArray(response.data) ? response.data : [];
-    const filteredTransferData = applyDateFilter(transferData);
-    const transferTotal = filteredTransferData.reduce((sum, item) => {
-      return sum + parseFloat(item.amount || 0);
-    }, 0);
-    setTotals(prev => ({ ...prev, transfer: transferTotal }));
-  })
   };
 
   useEffect(() => {
@@ -249,8 +231,8 @@ const checkAuth = () => {
     setIsDeleting(true);
     
     const endpoint = transactionType === "pengeluaran" 
-      ? `${API_URL}/bank/Transaction/${selectedId}` 
-      : `${API_URL}/income/incomes/${selectedId}`;
+      ? `${API_URL}/produk/Transaction/${selectedId}` 
+      : `${API_URL}/produk/TransactionMasuk/${selectedId}`;
     
     axios
       .delete(endpoint)
@@ -276,19 +258,13 @@ const checkAuth = () => {
   };
 
   const filteredData = data.filter((item) => {
-    
     const ref = item.ref?.toLowerCase() || "";
-    const bank = item.category?.bank_account_name?.toLowerCase() || "";
+    const lokasi = item.category?.location_name?.toLowerCase() || "";
     const name = item.name?.toLowerCase() || "";
     const query = searchQuery.toLowerCase();
-    if (transactionType === "transfer") {
-      const ref = item.ref?.toLowerCase() || "";
-      const fromBank = item.from?.bank?.toLowerCase() || "";
-      const toBank = item.to?.bank?.toLowerCase() || "";
-      return ref.includes(query) || fromBank.includes(query) || toBank.includes(query);
-    }
+    
     if (transactionType === "pengeluaran") {
-      return ref.includes(query) || bank.includes(query);
+      return ref.includes(query) || lokasi.includes(query);
     } else {
       return ref.includes(query) || name.includes(query);
     }
@@ -307,13 +283,13 @@ const checkAuth = () => {
   };
 
   const handleRowClick = (id) => {
-    const route = transactionType === "pengeluaran" ? "/create" : transactionType === "pembayaran" ? "/income" :"/bank-transfer";
+    const route = transactionType === "pengeluaran" ? "/StokKeluar" : "/StokMasuk";
     navigate(`${route}/${id}`);
   };
 
   const handleEdit = (e, id) => {
     e.stopPropagation();
-    const route = transactionType === "pengeluaran" ? "/create" : transactionType === "pembayaran" ? "/income" : "/bank-transfer";
+    const route = transactionType === "pengeluaran" ? "/StokKeluar" : "/StokMasuk";
     navigate(`${route}/${id}`);
   };
 
@@ -355,22 +331,6 @@ const checkAuth = () => {
   };
 
   const renderTableHeaders = () => {
-    if (transactionType === "transfer") {
-    return (
-      <tr>
-        <th className="text-left px-6 py-3 text-sm font-medium text-gray-700 cursor-pointer" onClick={handleSort}>
-          <div className="flex items-center">
-            Ref <ArrowUpDown size={16} className="ml-1" />
-          </div>
-        </th>
-        <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Bank Pengirim</th>
-        <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Bank Penerima</th>
-        <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Tanggal</th>
-        <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Jumlah</th>
-        <th className="text-center px-6 py-3 text-sm font-medium text-gray-700">Aksi</th>
-      </tr>
-    );
-  }
     return (
       <tr>
         <th 
@@ -385,10 +345,8 @@ const checkAuth = () => {
             </span>
           </div>
         </th>
-        <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Bank Account</th>
+        <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Lokasi</th>
         <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Tanggal</th>
-        <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">NoCek</th>
-        <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Penerima</th>
         <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Jumlah</th>
         <th className="text-center px-6 py-3 text-sm font-medium text-gray-700">Aksi</th>
       </tr>
@@ -396,76 +354,57 @@ const checkAuth = () => {
   };
 
   const renderTableRows = () => {
-  if (displayedData.length === 0) {
-    return (
-      <tr>
-        <td colSpan={transactionType === "transfer" ? 6 : 7} className="text-center py-4 text-gray-500">
-          Tidak ada data ditemukan
-        </td>
-      </tr>
-    );
-  }
-
-  return displayedData.map((item) => {
-    if (transactionType === "transfer") {
+    if (displayedData.length === 0) {
       return (
-        <tr key={item.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleRowClick(item.trans_no || item.outgoing_trans?.id || item.incoming_trans?.id)}>
-          <td className="px-6 py-3 text-left">{item.ref}</td>
-          <td className="px-6 py-3 text-left">{item.from?.bank || "-"}</td>
-          <td className="px-6 py-3 text-left">{item.to?.bank || "-"}</td>
-          <td className="px-6 py-3 text-left">
-            {new Date(item.trans_date).toLocaleDateString("id-ID")}
-          </td>
-          <td className="px-6 py-3 text-blue-600 font-semibold text-left">
-            Rp {parseFloat(item.amount).toLocaleString("id-ID")}
-          </td>
-          <td className="px-6 py-3 text-center">
-            <div className="flex justify-center space-x-2">
-              <button onClick={(e) => handleEdit(e, item.id)} className="p-1 text-blue-600 hover:text-blue-800" title="Edit">
-                <Edit size={18} />
-              </button>
-              <button onClick={(e) => handleDelete(e, item.id)} className="p-1 text-red-600 hover:text-red-800" title="Delete">
-                <Trash2 size={18} />
-              </button>
-            </div>
-          </td>
-        </tr>
-      );
-    } else {
-      // Untuk transaction type selain "transfer"
-      return (
-        <tr key={item.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleRowClick(item.id)}>
-          <td className="px-6 py-3 text-left">{item.ref}</td>
-          <td className="px-6 py-3 text-left">{item.category?.bank_account_name || "-"}</td>
-          <td className="px-6 py-3 text-left">
-            {new Date(item.trans_date).toLocaleDateString("id-ID")}
-          </td>
-          <td className="px-6 py-3 text-left">{item.nocek}</td>
-          <td className="px-6 py-3 text-left">{item.penerima}</td>
-          <td className="px-6 py-3 text-green-600 font-semibold text-left">
-            Rp {parseFloat(item.amount).toLocaleString("id-ID")}
-          </td>
-          <td className="px-6 py-3 text-center">
-            <div className="flex justify-center space-x-2">
-              <button onClick={(e) => handleEdit(e, item.id)} className="p-1 text-blue-600 hover:text-blue-800" title="Edit">
-                <Edit size={18} />
-              </button>
-              <button onClick={(e) => handleDelete(e, item.id)} className="p-1 text-red-600 hover:text-red-800" title="Delete" disabled={isDeleting}>
-                <Trash2 size={18} />
-              </button>
-            </div>
+        <tr>
+          <td colSpan={7} className="text-center py-4 text-gray-500">
+            Tidak ada data ditemukan.
           </td>
         </tr>
       );
     }
-  });
-};
-  
+
+    return displayedData.map((item) => (
+      <tr
+        key={item.id}
+        className="hover:bg-gray-50 cursor-pointer"
+        onClick={() => handleRowClick(item.id)}
+      >
+        <td className="px-6 py-3 text-left">{item.ref}</td>
+        <td className="px-6 py-3 text-left">
+          {item.category?.location_name || "-"}
+        </td>
+        <td className="px-6 py-3 text-left">
+          {new Date(item.trans_date).toLocaleDateString("id-ID")}
+        </td>
+        <td className="px-6 py-3 text-green-600 font-semibold text-left">
+          Rp {parseFloat(item.amount).toLocaleString("id-ID")}
+        </td>
+        <td className="px-6 py-3 text-center">
+          <div className="flex justify-center space-x-2">
+            <button
+              onClick={(e) => handleEdit(e, item.id)}
+              className="p-1 text-blue-600 hover:text-blue-800"
+              title="Edit"
+            >
+              <Edit size={18} />
+            </button>
+            <button
+              onClick={(e) => handleDelete(e, item.id)}
+              className="p-1 text-red-600 hover:text-red-800"
+              title="Delete"
+              disabled={isDeleting}
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
+        </td>
+      </tr>
+    ));
+  };
 
   const getCreatePath = () => {
-    if (transactionType === "pengeluaran") return "/create";
-    if (transactionType === "pembayaran") return "/income";
-    if (transactionType === "transfer") return "/bank-transfer"; 
+    return transactionType === "pengeluaran" ? "/StokKeluar" : "/StokMasuk"; 
   };
 
   return (
@@ -475,9 +414,8 @@ const checkAuth = () => {
       {/* Header with title and user info */}
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">Transaksi Bank</h1>
-          
-          
+          <h1 className="text-2xl font-bold text-gray-900">Transaksi Produk</h1>
+                    
         </div>
         
         {/* Date Filter Section */}
@@ -541,7 +479,7 @@ const checkAuth = () => {
         </div>
         
         {/* Total Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {/* Pengeluaran Card */}
           <div 
             className={`bg-gradient-to-r from-red-50 to-red-100 border rounded-lg p-6 cursor-pointer transition-all hover:shadow-md ${
@@ -551,7 +489,7 @@ const checkAuth = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-red-600">Total Pengeluaran</p>
+                <p className="text-sm font-medium text-red-600">Total Keluar Barang</p>
                 <p className="text-2xl font-bold text-red-800">
                   Rp {totals.pengeluaran.toLocaleString("id-ID")}
                 </p>
@@ -574,7 +512,7 @@ const checkAuth = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-600">Total Pembayaran</p>
+                <p className="text-sm font-medium text-green-600">Total Masuk Barang</p>
                 <p className="text-2xl font-bold text-green-800">
                   Rp {totals.pembayaran.toLocaleString("id-ID")}
                 </p>
@@ -586,20 +524,6 @@ const checkAuth = () => {
                 <TrendingUp size={24} className="text-green-600" />
               </div>
             </div>
-          </div>
-
-          {/* Transfer Card */}
-          <div className={`bg-gradient-to-r from-blue-50 to-blue-200 border rounded-lg p-6 cursor-pointer transition-all hover:shadow-md ${
-            transactionType === "transfer" ? "ring-2 ring-blue-300 shadow-md" : ""}`} onClick={() => handleTransactionTypeChange("transfer")}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-600"> Total Transfer</p>
-                <p className="text-2xl font-bold text-blue-800">Rp {totals.transfer.toLocaleString("id-ID")}</p>
-                <p className="text-xs text-blue-500">{getDateFilterLabel()} • Klik untuk melihat detail</p>
-              </div>
-              <div className="p-3 bg-blue-200 rounded-full"><ArrowUpDown size={24} className="text-blue-600"/></div>
-            </div>
-            
           </div>
         </div>
 
@@ -613,7 +537,7 @@ const checkAuth = () => {
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            Pengeluaran
+            Keluar
           </button>
           <button
             onClick={() => handleTransactionTypeChange("pembayaran")}
@@ -623,14 +547,7 @@ const checkAuth = () => {
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            Pembayaran
-          </button>
-          <button onClick={() => handleTransactionTypeChange("transfer")}
-           className={`px-6 py-3 rounded-sm font-medium transition-all ${
-            transactionType === "transfer" 
-            ? "bg-white text-blue-600 shadow-md"
-            :"text-gray-600 hover:text-gray-700"}`}>
-            Transfer
+            Masuk
           </button>
         </div>
       </div>
@@ -643,11 +560,10 @@ const checkAuth = () => {
             className={`px-4 py-2 text-white rounded-lg transition-colors shadow-sm ${
               transactionType === "pengeluaran" 
                 ? "bg-red-600 hover:bg-red-700" 
-                : transactionType === "pembayaran" ? "bg-green-600 hover:bg-green-700"
-                : "bg-blue-500 hover:bg-blue-700"
+                : "bg-green-600 hover:bg-green-700"
             }`}
           >
-            + Tambah {transactionType === "pengeluaran" ? "Pengeluaran" : transactionType === "pembayaran" ? "pembayaran" : "transfer" }
+            + Tambah {transactionType === "pengeluaran" ? "Keluar Barang" : "Masuk Barang"}
           </button>
           <button
             onClick={toggleShowAll}
@@ -666,7 +582,7 @@ const checkAuth = () => {
           <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder={transactionType === "pengeluaran" ? "Cari ref atau nama bank..." : "Cari ref atau nama..."}
+            placeholder={transactionType === "pengeluaran" ? "Cari ref atau nama lokasi..." : "Cari ref atau nama..."}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -682,10 +598,9 @@ const checkAuth = () => {
         <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
           transactionType === "pengeluaran" 
             ? "bg-red-100 text-red-800" 
-            : transactionType === "pembayaran" ? "bg-green-100 text-green-800"
-            : "bg-blue-100 text-blue-700"
+            : "bg-green-100 text-green-800"
         }`}>
-          Menampilkan: {transactionType === "pengeluaran" ? "Pengeluaran" : transactionType === "pembayaran" ? "Pembayaran":"transfer"} • {getDateFilterLabel()}
+          Menampilkan: {transactionType === "pengeluaran" ? "Pengeluaran" : "Pembayaran"} • {getDateFilterLabel()}
         </div>
       </div>
 

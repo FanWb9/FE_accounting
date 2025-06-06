@@ -404,43 +404,15 @@ export default function Dashboard() {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Pie Chart */}
-          {/* <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center mb-6">
-              <PieChart className="text-blue-600 mr-3" size={24} />
-              <h3 className="text-xl font-semibold text-gray-800">Distribusi Keuangan</h3>
-            </div>
-            <ResponsiveContainer width="100%" height={350}>
-              <PieChart>
-                <Pie
-                  data={getPieChartData()}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(1)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {getPieChartData().map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value) => [formatCurrency(value), 'Jumlah']}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div> */}
-
-          {/* Monthly Trend - Epic Building Chart with Trend */}
-          <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200 relative overflow-hidden">
+        
+         {/* Monthly Trend - Professional Financial Chart */}
+        <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200 relative overflow-hidden">
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-5">
               <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-blue-600 to-purple-600" 
-                   style={{
-                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234f46e5' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-                   }}>
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234f46e5' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+                  }}>
               </div>
             </div>
             
@@ -452,9 +424,9 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      📈 Flow Keuangan 
+                      Flow Keuangan 
                     </h3>
-                    <p className="text-sm text-gray-500">Building chart dengan analisis mendalam</p>
+                    <p className="text-sm text-gray-500">Analisis trend pembayaran dan pengeluaran</p>
                   </div>
                 </div>
                 
@@ -466,7 +438,7 @@ export default function Dashboard() {
                       item.trend === 'down' ? 'bg-red-100 text-red-700' :
                       'bg-gray-100 text-gray-700'
                     }`}>
-                      {item.trend === 'up' ? '📈' : item.trend === 'down' ? '📉' : '➡️'} 
+                      {item.trend === 'up' ? '↗' : item.trend === 'down' ? '↘' : '→'} 
                       {item.growth !== 0 ? `${Math.abs(item.growth).toFixed(1)}%` : 'Stabil'}
                     </div>
                   ))}
@@ -481,25 +453,25 @@ export default function Dashboard() {
                     barCategoryGap="15%"
                   >
                     <defs>
-                      {/* Epic Gradients */}
+                      {/* Professional Gradients */}
                       <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#10b981" stopOpacity={0.9}/>
                         <stop offset="50%" stopColor="#34d399" stopOpacity={0.7}/>
                         <stop offset="100%" stopColor="#6ee7b7" stopOpacity={0.3}/>
                       </linearGradient>
                       <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.9}/>
-                        <stop offset="50%" stopColor="#fb7185" stopOpacity={0.7}/>
-                        <stop offset="100%" stopColor="#fda4af" stopOpacity={0.3}/>
+                        <stop offset="0%" stopColor="#ef4444" stopOpacity={0.9}/>
+                        <stop offset="50%" stopColor="#f87171" stopOpacity={0.7}/>
+                        <stop offset="100%" stopColor="#fca5a5" stopOpacity={0.3}/>
                       </linearGradient>
                       <linearGradient id="netFlowGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8}/>
                         <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.2}/>
                       </linearGradient>
                       
-                      {/* Glow Effects */}
+                      {/* Subtle Glow Effects */}
                       <filter id="glow">
-                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                         <feMerge> 
                           <feMergeNode in="coloredBlur"/>
                           <feMergeNode in="SourceGraphic"/>
@@ -529,20 +501,20 @@ export default function Dashboard() {
                       yAxisId="right"
                       orientation="right"
                       tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
-                      tick={{ fontSize: 11, fill: '#8b5cf6', fontWeight: '500' }}
+                      tick={{ fontSize: 11, fill: '#3b82f6', fontWeight: '500' }}
                       axisLine={false}
                       tickLine={false}
                     />
                     
                     <Tooltip 
                       formatter={(value, name) => [formatCurrency(value), name]}
-                      labelFormatter={(label) => `📊 ${label}`}
+                      labelFormatter={(label) => `Bulan: ${label}`}
                       contentStyle={{
                         backgroundColor: 'rgba(255, 255, 255, 0.95)',
                         border: 'none',
-                        borderRadius: '16px',
-                        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-                        backdropFilter: 'blur(20px)',
+                        borderRadius: '12px',
+                        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+                        backdropFilter: 'blur(10px)',
                         fontSize: '12px'
                       }}
                     />
@@ -551,59 +523,84 @@ export default function Dashboard() {
                       iconType="rect"
                     />
                     
-                    {/* Building Bars */}
+                    {/* Income Bars - Green */}
                     <Bar 
                       yAxisId="left"
                       dataKey="pembayaran" 
                       fill="url(#incomeGradient)"
-                      name="💰 Pembayaran"
-                      radius={[12, 12, 0, 0]}
-                      maxBarSize={50}
-                      filter="url(#glow)"
+                      name="Pembayaran"
+                      radius={[8, 8, 0, 0]}
+                      maxBarSize={45}
                     />
+                    
+                    {/* Expense Bars - Red */}
                     <Bar 
                       yAxisId="left"
                       dataKey="pengeluaran" 
                       fill="url(#expenseGradient)"
-                      name="💸 Pengeluaran"
-                      radius={[12, 12, 0, 0]}
-                      maxBarSize={50}
-                      filter="url(#glow)"
+                      name="Pengeluaran"
+                      radius={[8, 8, 0, 0]}
+                      maxBarSize={45}
                     />
                     
-                    {/* Net Flow Area */}
+                    {/* Net Flow Area - Blue */}
                     <Area
                       yAxisId="right"
                       type="monotone"
                       dataKey="netFlow"
                       fill="url(#netFlowGradient)"
-                      stroke="#6366f1"
+                      stroke="transparent"
                       strokeWidth={0}
-                      name="📈 Net Flow"
-                      fillOpacity={0.3}
+                      name="Net Cash Flow"
+                      fillOpacity={0.2}
                     />
                     
-                    {/* Trend Line */}
+                    {/* Primary Trend Line - Blue */}
                     <Line
                       yAxisId="right"
                       type="monotone"
                       dataKey="netFlow"
-                      stroke="#6366f1"
-                      strokeWidth={4}
+                      stroke="#3b82f6"
+                      strokeWidth={3}
+                      strokeDasharray="0"
                       dot={{ 
-                        fill: '#6366f1', 
-                        strokeWidth: 3, 
-                        r: 6,
-                        filter: "url(#glow)"
+                        fill: '#3b82f6', 
+                        strokeWidth: 2, 
+                        r: 5
                       }}
                       activeDot={{ 
-                        r: 8, 
-                        fill: '#8b5cf6',
+                        r: 7, 
+                        fill: '#3b82f6',
                         stroke: '#ffffff',
-                        strokeWidth: 3,
-                        filter: "url(#glow)"
+                        strokeWidth: 2
                       }}
-                      name="📊 Net Cash Flow"
+                      name="Net Cash Flow"
+                      connectNulls={false}
+                    />
+                    
+                    {/* Income Trend Line - Green */}
+                    <Line
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="pembayaran"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={false}
+                      name="Trend Pembayaran"
+                      connectNulls={false}
+                    />
+                    
+                    {/* Expense Trend Line - Red */}
+                    <Line
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="pengeluaran"
+                      stroke="#ef4444"
+                      strokeWidth={2}
+                      strokeDasharray="8 3"
+                      dot={false}
+                      name="Trend Pengeluaran"
                       connectNulls={false}
                     />
                   </ComposedChart>
@@ -614,8 +611,8 @@ export default function Dashboard() {
                     <div className="bg-gradient-to-r from-gray-200 to-gray-300 p-6 rounded-full mb-6 mx-auto w-20 h-20 flex items-center justify-center shadow-lg">
                       <BarChart3 size={36} className="text-gray-500" />
                     </div>
-                    <h4 className="text-xl font-bold text-gray-600 mb-2">🏗️ Grafik Siap Dibangun!</h4>
-                    <p className="text-sm text-gray-500">Building chart akan muncul setelah ada transaksi</p>
+                    <h4 className="text-xl font-bold text-gray-600 mb-2">Grafik Siap Ditampilkan</h4>
+                    <p className="text-sm text-gray-500">Chart akan muncul setelah ada data transaksi</p>
                     <div className="mt-4 flex justify-center gap-2">
                       <div className="w-3 h-8 bg-green-200 rounded-t-md opacity-50"></div>
                       <div className="w-3 h-12 bg-blue-200 rounded-t-md opacity-60"></div>

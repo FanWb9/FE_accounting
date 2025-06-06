@@ -24,53 +24,170 @@ export default function LaporanBukuBesar() {
   const API_BASE = 'http://localhost:8080';
 
   // Fetch buku besar data
-  const fetchBukuBesar = async () => {
-    setLoading(true);
+ // Fix untuk fetchBukuBesar function
+const fetchBukuBesar = async () => {
+  setLoading(true);
+  
+  try {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
     
-    try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const headers = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`${API_BASE}/bukubesar/all`, {
+      method: 'GET',
+      headers: headers,
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('UNAUTHORIZED');
       }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Buku Besar data fetched successfully:', data);
+    
+    // FIX: Pastikan data selalu array
+    const safeData = Array.isArray(data) ? data : [];
+    setBukuBesarData(safeData);
+    setFilteredData(safeData);
+    
+  } catch (error) {
+    console.error('Error fetching buku besar:', error);
+    // FIX: Set ke array kosong jika error
+    setBukuBesarData([]);
+    setFilteredData([]);
+    
+    if (error.message === 'UNAUTHORIZED' || error.message.includes('401')) {
+      alert("Sesi login tidak valid. Silakan login kembali.");
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      window.location.href = '/login';
+    } else {
+      alert('Gagal memuat data buku besar: ' + error.message);
+    }
+  }
+  setLoading(false);
+};
+
+// Fix untuk applyFilters function
+const applyFilters = () => {
+  // FIX: Pastikan bukuBesarData adalah array sebelum di-spread
+  if (!Array.isArray(bukuBesarData)) {
+    console.warn('bukuBesarData is not an array:', bukuBesarData);
+    setFilteredData([]);
+    return;
+  }
+  
+  let filtered = [...bukuBesarData];
+  
+  // Jika ada filter tanggal, hitung opening balance dan filter transaksi
+  if (filters.startDate || filters.endDate) {
+    filtered = filtered.map(account => {
+      // Pastikan account.transactions adalah array
+      const transactions = Array.isArray(account.transactions) ? account.transactions : [];
       
-      const response = await fetch(`${API_BASE}/bukubesar/all`, {
-        method: 'GET',
-        headers: headers,
-        credentials: 'include'
+      // Sort transactions by date
+      const sortedTransactions = [...transactions].sort((a, b) => 
+        new Date(a.tran_date) - new Date(b.tran_date)
+      );
+      
+      // Calculate opening balance hanya jika ada startDate
+      const openingBalance = filters.startDate 
+        ? calculateOpeningBalance(sortedTransactions, filters.startDate)
+        : 0;
+      
+      // Filter transactions by date
+      const filteredTransactions = sortedTransactions.filter(trans => {
+        const transDate = new Date(trans.tran_date);
+        let includeTransaction = true;
+        
+        if (filters.startDate) {
+          const startDate = new Date(filters.startDate);
+          startDate.setHours(0, 0, 0, 0);
+          includeTransaction = includeTransaction && transDate >= startDate;
+        }
+        
+        if (filters.endDate) {
+          const endDate = new Date(filters.endDate);
+          endDate.setHours(23, 59, 59, 999);
+          includeTransaction = includeTransaction && transDate <= endDate;
+        }
+        
+        return includeTransaction;
       });
       
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('UNAUTHORIZED');
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('Buku Besar data fetched successfully:', data);
-      setBukuBesarData(data);
-      setFilteredData(data);
-      
-    } catch (error) {
-      console.error('Error fetching buku besar:', error);
-      setBukuBesarData([]);
-      setFilteredData([]);
-      
-      if (error.message === 'UNAUTHORIZED' || error.message.includes('401')) {
-        alert("Sesi login tidak valid. Silakan login kembali.");
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        window.location.href = '/login';
-      } else {
-        alert('Gagal memuat data buku besar: ' + error.message);
-      }
+      return {
+        ...account,
+        transactions: filteredTransactions,
+        opening_balance: openingBalance
+      };
+    }).filter(account => 
+      account.transactions.length > 0 || 
+      (account.opening_balance !== undefined && account.opening_balance !== 0)
+    );
+  } else {
+    // Jika tidak ada filter tanggal, set opening_balance ke 0 untuk semua akun
+    filtered = filtered.map(account => ({
+      ...account,
+      opening_balance: 0
+    }));
+  }
+  
+  // Filter berdasarkan kode akun
+  if (filters.accountCode) {
+    filtered = filtered.filter(account => 
+      account.account_code && account.account_code.toLowerCase().includes(filters.accountCode.toLowerCase())
+    );
+  }
+  
+  // Filter berdasarkan nama akun
+  if (filters.accountName) {
+    filtered = filtered.filter(account => 
+      account.account_name && account.account_name.toLowerCase().includes(filters.accountName.toLowerCase())
+    );
+  }
+  
+  setFilteredData(filtered);
+};
+
+// Fix untuk calculateOpeningBalance function
+const calculateOpeningBalance = (transactions, startDate) => {
+  // FIX: Tambahkan null safety
+  if (!startDate || !Array.isArray(transactions) || transactions.length === 0) {
+    return 0;
+  }
+  
+  const filterDate = new Date(startDate);
+  filterDate.setHours(0, 0, 0, 0);
+  
+  let openingBalance = 0;
+  
+  // Sort transactions by date first
+  const sortedTransactions = [...transactions].sort((a, b) => 
+    new Date(a.tran_date) - new Date(b.tran_date)
+  );
+  
+  sortedTransactions.forEach(trans => {
+    const transDate = new Date(trans.tran_date);
+    transDate.setHours(0, 0, 0, 0);
+    
+    if (transDate < filterDate) {
+      const amount = parseFloat(trans.amount) || 0;
+      openingBalance += amount;
     }
-    setLoading(false);
-  };
+  });
+  
+  return openingBalance;
+};
+
 
   
   const fetchChartOfAccounts = async () => {
@@ -218,105 +335,105 @@ export default function LaporanBukuBesar() {
     };
   };
 
-  const calculateOpeningBalance = (transactions, startDate) => {
-    // Jika tidak ada startDate atau tidak ada transaksi, return 0
-    if (!startDate || !transactions || transactions.length === 0) {
-      return 0;
-    }
+  // const calculateOpeningBalance = (transactions, startDate) => {
+  //   // Jika tidak ada startDate atau tidak ada transaksi, return 0
+  //   if (!startDate || !transactions || transactions.length === 0) {
+  //     return 0;
+  //   }
     
-    const filterDate = new Date(startDate);
-    filterDate.setHours(0, 0, 0, 0);
+  //   const filterDate = new Date(startDate);
+  //   filterDate.setHours(0, 0, 0, 0);
     
-    let openingBalance = 0;
+  //   let openingBalance = 0;
     
-    // Sort transactions by date first
-    const sortedTransactions = [...transactions].sort((a, b) => 
-      new Date(a.tran_date) - new Date(b.tran_date)
-    );
+  //   // Sort transactions by date first
+  //   const sortedTransactions = [...transactions].sort((a, b) => 
+  //     new Date(a.tran_date) - new Date(b.tran_date)
+  //   );
     
-    sortedTransactions.forEach(trans => {
-      const transDate = new Date(trans.tran_date);
-      transDate.setHours(0, 0, 0, 0);
+  //   sortedTransactions.forEach(trans => {
+  //     const transDate = new Date(trans.tran_date);
+  //     transDate.setHours(0, 0, 0, 0);
       
-      if (transDate < filterDate) {
-        const amount = parseFloat(trans.amount) || 0;
-        openingBalance += amount;
-      }
-    });
+  //     if (transDate < filterDate) {
+  //       const amount = parseFloat(trans.amount) || 0;
+  //       openingBalance += amount;
+  //     }
+  //   });
     
-    return openingBalance;
-  };
+  //   return openingBalance;
+  // };
 
-   const applyFilters = () => {
-    let filtered = [...bukuBesarData];
+  //  const applyFilters = () => {
+  //   let filtered = [...bukuBesarData];
     
-    // Jika ada filter tanggal, hitung opening balance dan filter transaksi
-    if (filters.startDate || filters.endDate) {
-      filtered = filtered.map(account => {
-        // Sort transactions by date
-        const sortedTransactions = [...account.transactions].sort((a, b) => 
-          new Date(a.tran_date) - new Date(b.tran_date)
-        );
+  //   // Jika ada filter tanggal, hitung opening balance dan filter transaksi
+  //   if (filters.startDate || filters.endDate) {
+  //     filtered = filtered.map(account => {
+  //       // Sort transactions by date
+  //       const sortedTransactions = [...account.transactions].sort((a, b) => 
+  //         new Date(a.tran_date) - new Date(b.tran_date)
+  //       );
         
-        // Calculate opening balance hanya jika ada startDate
-        const openingBalance = filters.startDate 
-          ? calculateOpeningBalance(sortedTransactions, filters.startDate)
-          : 0;
+  //       // Calculate opening balance hanya jika ada startDate
+  //       const openingBalance = filters.startDate 
+  //         ? calculateOpeningBalance(sortedTransactions, filters.startDate)
+  //         : 0;
         
-        // Filter transactions by date
-        const filteredTransactions = sortedTransactions.filter(trans => {
-          const transDate = new Date(trans.tran_date);
-          let includeTransaction = true;
+  //       // Filter transactions by date
+  //       const filteredTransactions = sortedTransactions.filter(trans => {
+  //         const transDate = new Date(trans.tran_date);
+  //         let includeTransaction = true;
           
-          if (filters.startDate) {
-            const startDate = new Date(filters.startDate);
-            startDate.setHours(0, 0, 0, 0);
-            includeTransaction = includeTransaction && transDate >= startDate;
-          }
+  //         if (filters.startDate) {
+  //           const startDate = new Date(filters.startDate);
+  //           startDate.setHours(0, 0, 0, 0);
+  //           includeTransaction = includeTransaction && transDate >= startDate;
+  //         }
           
-          if (filters.endDate) {
-            const endDate = new Date(filters.endDate);
-            endDate.setHours(23, 59, 59, 999);
-            includeTransaction = includeTransaction && transDate <= endDate;
-          }
+  //         if (filters.endDate) {
+  //           const endDate = new Date(filters.endDate);
+  //           endDate.setHours(23, 59, 59, 999);
+  //           includeTransaction = includeTransaction && transDate <= endDate;
+  //         }
           
-          return includeTransaction;
-        });
+  //         return includeTransaction;
+  //       });
         
-        return {
-          ...account,
-          transactions: filteredTransactions,
-          opening_balance: openingBalance // Selalu ada nilai, tidak akan NaN
-        };
-      }).filter(account => 
-        // Tampilkan akun jika ada transaksi ATAU ada opening balance
-        account.transactions.length > 0 || 
-        (account.opening_balance !== undefined && account.opening_balance !== 0)
-      );
-    } else {
-      // Jika tidak ada filter tanggal, set opening_balance ke 0 untuk semua akun
-      filtered = filtered.map(account => ({
-        ...account,
-        opening_balance: 0
-      }));
-    }
+  //       return {
+  //         ...account,
+  //         transactions: filteredTransactions,
+  //         opening_balance: openingBalance // Selalu ada nilai, tidak akan NaN
+  //       };
+  //     }).filter(account => 
+  //       // Tampilkan akun jika ada transaksi ATAU ada opening balance
+  //       account.transactions.length > 0 || 
+  //       (account.opening_balance !== undefined && account.opening_balance !== 0)
+  //     );
+  //   } else {
+  //     // Jika tidak ada filter tanggal, set opening_balance ke 0 untuk semua akun
+  //     filtered = filtered.map(account => ({
+  //       ...account,
+  //       opening_balance: 0
+  //     }));
+  //   }
     
-    // Filter berdasarkan kode akun
-    if (filters.accountCode) {
-      filtered = filtered.filter(account => 
-        account.account_code.toLowerCase().includes(filters.accountCode.toLowerCase())
-      );
-    }
+  //   // Filter berdasarkan kode akun
+  //   if (filters.accountCode) {
+  //     filtered = filtered.filter(account => 
+  //       account.account_code.toLowerCase().includes(filters.accountCode.toLowerCase())
+  //     );
+  //   }
     
-    // Filter berdasarkan nama akun
-    if (filters.accountName) {
-      filtered = filtered.filter(account => 
-        account.account_name.toLowerCase().includes(filters.accountName.toLowerCase())
-      );
-    }
+  //   // Filter berdasarkan nama akun
+  //   if (filters.accountName) {
+  //     filtered = filtered.filter(account => 
+  //       account.account_name.toLowerCase().includes(filters.accountName.toLowerCase())
+  //     );
+  //   }
     
-    setFilteredData(filtered);
-  };
+  //   setFilteredData(filtered);
+  // };
 
 // Bagian yang perlu diperbaiki dalam fungsi downloadPDF()
 
@@ -803,27 +920,27 @@ const downloadPDF = async () => {
     </div>
   );
 
-  return (
+return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <button 
-              onClick={() => navigate("/laporan")}
-              className="flex items-center gap-2 px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
-            >
-              Kembali
-            </button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <BookOpen size={32} className="text-blue-500" />
-                Laporan Buku Besar
-              </h1>
-              <p className="text-gray-600">Laporan rincian transaksi per akun dengan running balance</p>
-            </div>
+      {/* Header - selalu tampil */}
+      <div className="mb-8">
+        <div className="flex items-center gap-4 mb-4">
+          <button 
+            onClick={() => navigate("/laporan")}
+            className="flex items-center gap-2 px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+          >
+            Kembali
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <BookOpen size={32} className="text-blue-500" />
+              Laporan Buku Besar
+            </h1>
+            <p className="text-gray-600">Laporan rincian transaksi per akun dengan running balance</p>
           </div>
         </div>
+      </div>
 
         {/* Filter Section */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -995,7 +1112,7 @@ const downloadPDF = async () => {
       </div>
 
       {/* PDF Viewer Modal */}
-      {showPDFView && <PDFViewer data={generateBukuBesarPDF()} />}
+     {showPDFView && filteredData && <PDFViewer data={generateBukuBesarPDF()} />}
     </div>
   );
 }

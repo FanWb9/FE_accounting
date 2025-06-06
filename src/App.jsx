@@ -17,6 +17,17 @@ import PriviewBankMasuk from "./Bank/Priview_Bankmasuk";
 import BankTransfer from "./Bank/Bank_transfer";
 import LaporanBukuBesar from "./Laporan/Laporan-BukuBesar";
 import LaporanJurnal from "./Laporan/Jurnal-Laporan";
+import TabelProduk from "./Produk/TabelProdukKeluar";
+import ProdukKeluar from "./Produk/Stok_Keluar";
+import ProdukMasuk from "./Produk/Stok_masuk";
+import Previewout from "./Produk/previewout";
+import Previewin from "./Produk/Previewin";
+import MasterDashboard from "./Master/DashboardMaster";
+import TabelPenjualan from "./Sales/Tabel_Penjualan";
+import Sales from "./Sales/Sales_Invoice";
+import SalesOrder from "./Sales/Sales_Order";
+import PreviewInvoice from "./Sales/PreviewInvoice";
+import PreviewOrder from "./Sales/Previeworder";
 
 function App() {
   return (
@@ -49,7 +60,28 @@ function App() {
           <Route path="Laporan-jurnal" element={<LaporanJurnal/>}/>
           <Route path="bank-transfer" element={<BankTransfer />} />
           <Route path="bank-transfer/:id" element={<BankTransfer />} />
-          <Route path="Laporan-buku" element={<LaporanBukuBesar/>}/>
+          <Route path="laporanBuku" element={<LaporanBukuBesar/>}/>
+
+          <Route path="produk" element={<TabelProduk/>}/>
+          <Route path="StokKeluar" element={<ProdukKeluar />} />
+          <Route path="StokKeluar/:id" element={<ProdukKeluar />} />
+          <Route path="StokMasuk" element={<ProdukMasuk />} />
+          <Route path="StokMasuk/:id" element={<ProdukMasuk />} />
+
+          <Route path="sales" element={<TabelPenjualan/>}/>
+          <Route path="SalesInvoice" element={<Sales />} />
+          <Route path="SalesInvoice/:id" element={<Sales />} />
+          <Route path="SalesOrder" element={<SalesOrder />} />
+          <Route path="SalesOrder/:id" element={<SalesOrder />} />
+
+          <Route path="previewout" element={<Previewout />} />
+          <Route path="previewin" element={<Previewin />} />
+          <Route path="previewinvoice" element={<PreviewInvoice />} />
+          <Route path="previeworder" element={<PreviewOrder />} />
+
+
+          <Route path="master" element={<MasterDashboard/>}/>
+
         </Route>
       </Route>
     </Routes>
